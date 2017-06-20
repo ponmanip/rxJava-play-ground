@@ -4,7 +4,7 @@ import io.reactivex.Observable;
 import io.reactivex.internal.functions.Functions;
 import io.reactivex.schedulers.Schedulers;
 
-/** Created by gyo7 on 27/05/17. */
+/** Created by Ponmani Palanisamy on 27/05/17. */
 public class HelloRx {
 
   public void operateSerial() throws InterruptedException {
@@ -20,7 +20,9 @@ public class HelloRx {
   public void operateParallel1() {
 
     Observable.fromArray("1", "2", "3", "4", "2", "3")
-        .subscribeOn(Schedulers.computation())  //A new thread takes over from Main thread. ven a observeOn would have given us the same functionality
+        .subscribeOn(
+            Schedulers
+                .computation()) //A new thread takes over from Main thread. ven a observeOn would have given us the same functionality
         .flatMap(
             s -> {
               System.out.println(
