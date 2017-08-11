@@ -17,7 +17,7 @@ public class SubscriberExample2 extends DefaultObserver<Command> {
 
   @Override
   public void onError(Throwable throwable) {
-    log.info("onError: " + throwable.getMessage());
+    log.error("onError: " , throwable);
   }
 
   @Override

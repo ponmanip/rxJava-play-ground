@@ -2,13 +2,14 @@ package simple;
 
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import simple.domain.Command;
 
-import java.util.List;
 import java.util.Random;
 
 /** Created by Ponmani Palanisamy on 11/08/17. */
+@Slf4j
 public class ObservableTest {
   @Test
   public void testObservable() throws InterruptedException {
@@ -16,7 +17,7 @@ public class ObservableTest {
       ObservableExample.processItem(new Command(i));
     }
 
-    Thread.sleep(1000000);
+    Thread.sleep(1000);
   }
 
   @Test
@@ -29,20 +30,17 @@ public class ObservableTest {
                     .subscribeOn(Schedulers.computation())
                     .map(
                         j -> {
-                            Thread.sleep(new Random().nextInt(200));
-                          System.out.println(
-                              Thread.currentThread().getName() + ": " + j.intValue());
+                          Thread.sleep(new Random().nextInt(200));
+                          log.info(Thread.currentThread().getName() + ": " + j.intValue());
                           return j + "***";
                         }))
         .toList()
         .subscribe(
             list -> {
               for (String s : list) {
-                System.out.println(Thread.currentThread().getName() + ": " + s);
+                log.info(Thread.currentThread().getName() + ": " + s);
               }
             });
-    Thread.sleep(20000);
+    Thread.sleep(1000);
   }
-
-  public void inspect(List<String> list) {}
 }
