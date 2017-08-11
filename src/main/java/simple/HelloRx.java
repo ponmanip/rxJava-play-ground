@@ -20,9 +20,12 @@ public class HelloRx {
   public void operateParallel1() {
 
     Observable.fromArray("1", "2", "3", "4", "2", "3")
+        /*
+                    .doOnError()
+        */
         .subscribeOn(
             Schedulers
-                .computation()) //A new thread takes over from Main thread. ven a observeOn would have given us the same functionality
+                .computation()) //A new thread takes over from Main thread. Even an observeOn would have given us the same functionality
         .flatMap(
             s -> {
               System.out.println(
@@ -63,7 +66,8 @@ public class HelloRx {
     Observable.fromArray("1", "2", "3", "4", "2", "3")
         .flatMap(
             s -> {
-              System.out.println(Thread.currentThread().getName()); //Main Thread
+              System.out.println(Thread.currentThread().getName()+ " starting " + s); //Main Thread
+                Thread.sleep(50);
               return Observable.just(s)
                   .observeOn(Schedulers.computation())
                   .map(
@@ -81,7 +85,7 @@ public class HelloRx {
             s -> converter(s),
             Functions.ERROR_CONSUMER,
             () ->
-                System.out.println(
+                System.out.println(Thread.currentThread().getName()+" "+
                     "Completed")); //RxComputationThreadPool-1, RxComputationThreadPool-2, etc.
   }
 
@@ -99,4 +103,55 @@ public class HelloRx {
     System.out.println(s + "  : " + Thread.currentThread().getName());
     return s + 100;
   }
+
+  public void exceptionHandling() {
+    Observable obs = Observable.range(1, -3);
+    obs.subscribe(System.out::println, error -> System.out.println("Error!"));
+  }
+
+
+    public void operateParallel3() {
+
+        Observable.fromArray("1", "2", "3", "4", "2", "3")
+        /*
+                    .doOnError()
+        */
+                .subscribeOn(
+                        Schedulers
+                                .computation()) //A new thread takes over from Main thread. Even an observeOn would have given us the same functionality
+                .flatMap(
+                        s -> {
+                            System.out.println(
+                                    Thread.currentThread()
+                                            .getName()); //RxComputationThreadPool-1 for all 6 observables
+                            return Observable.just(s)
+                                    .map(
+                                            item -> {
+                                                System.out.println(
+                                                        "!!"
+                                                                + Thread.currentThread()
+                                                                .getName()); //RxComputationThreadPool-1. Had we used subscribeOn instead of observeOn as the next operation we would have got RxComputationThreadPool-2, 3, 4, etc. Because observeon is applicable only for the operations downstream. But subscribeon is applicable for all the operations (be it upstream or downstream) for a subscription of an observable.
+                                                return item.toLowerCase();
+                                            })
+                                    .observeOn(Schedulers.computation())
+                                    .map(
+                                            item -> {
+                                                if ("200".equals(item)) {
+                                                    Thread.sleep(100);
+                                                }
+                                                ;
+                                                return "**"
+                                                        + convertToString(item)
+                                                        + "**"; //RxComputationThreadPool-2, RxComputationThreadPool-3, etc.
+                                            });
+                        })
+                .blockingSubscribe(
+                        s -> converter(s),
+                        Functions.ERROR_CONSUMER,
+                        () ->
+                                System.out.println(
+                                        "Completed")); //Main Thread. If we don't do a blockingSubscribe and do a subscribe(), these will be handled by RxComputationThreadPool-2, RxComputationThreadPool-3, etc.
+
+        // Thread.sleep(1000); // This is needed if we don't use blockingSubscribe. Because the Main thread wil be free after creating the Observable from array and will just exit.
+    }
 }

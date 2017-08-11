@@ -27,4 +27,9 @@ public class HelloRxTest {
   public void playWithMultiThread2() throws InterruptedException {
     helloRx.operateParallel2();
   }
+
+  @Test
+  public void testExceptionHandlingOnCreatingObservable(){
+    helloRx.exceptionHandling();
+  }
 }
